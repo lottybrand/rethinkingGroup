@@ -1,0 +1,215 @@
+---
+title: "Untitled"
+author: "Angel V. Jimenez"
+date: "22 March 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# CHAPTER 2
+
+# 2.4.3. GRID APPROXIMATION
+
+Problem: distribution of water and land on Earth. 9 tossess of the globe, 6 waters. 
+
+```{r}
+# define grid
+p_grid <- seq( from=0 , to=1 , length.out=20 ) # Creation of grid of 20 points between 0 and 1 (continuous)
+p_grid
+```
+
+
+
+```{r}
+# define prior
+prior <- rep( 1 , 20 ) # uniform prior
+prior
+```
+
+
+
+```{r}
+# compute likelihood at each value in grid
+likelihood <- dbinom( 6 , size=9 , prob=p_grid ) # likelihood of 6 waters in 9 tossess given the different likelihoods given by the grid
+likelihood
+```
+
+
+```{r}
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+unstd.posterior
+```
+
+
+```{r}
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+posterior
+sum(posterior)# check that it sums to 1
+```
+
+
+```{r}
+# display of posterior distribution
+plot( p_grid , posterior , type="b" ,
+      xlab="probability of water" , ylab="posterior probability" )
+mtext( "20 points" )
+```
+
+```{r}
+# grid of only 5 points
+# define grid
+p_grid <- seq( from=0 , to=1 , length.out=5 )
+# define prior
+prior <- rep( 1 , 5 )
+# compute likelihood at each value in grid
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "5 points" )
+```
+
+```{r}
+# grid of 100 points
+# define grid
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- rep( 1 , 100 )
+# compute likelihood at each value in grid
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "100" )
+```
+
+The results are quite similar with 5, 20 and 100 points but the uncertainty reduces with more points (the posterior probability is much smaller with 100 points)
+
+```{r}
+# DIFFERENT PRIOR: We think the probability of water is between 0.5 and 1
+# define grid
+p_grid <- seq( from=0 , to=1 , length.out=20 )
+# Different prior
+prior <- ifelse( p_grid < 0.5 , 0 , 1 )
+prior
+plot(p_grid, prior)
+```
+
+
+```{r}
+# compute likelihood at each value in grid
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "20 points" )
+```
+
+
+```{r}
+# DIFFERENT PRIOR: 
+# define grid
+p_grid <- seq( from=0 , to=1 , length.out=10000 )
+prior <- exp( -5*abs( p_grid - 0.5 ) ) # What the hell does this mean??
+prior
+plot(p_grid, prior)
+```
+
+```{r}
+# compute likelihood at each value in grid
+likelihood <- dbinom( 6 , size=9 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "10000 points" )
+```
+
+#2.4.4. QUADRATIC APPROXIMATION
+
+```{r}
+library(rethinking)
+```
+
+```{r}
+globe.qa <- quap(
+alist(
+W ~ dbinom( W+L ,p) , # binomial likelihood
+p ~ dunif(0,1) # uniform prior
+) ,
+data=list(W=6,L=3) )
+# display summary of quadratic approximation
+precis( globe.qa )
+```
+
+```{r}
+# analytical calculation
+W <- 6
+L <- 3
+curve( dbeta( x , W+1 , L+1 ) , from=0 , to=1 )
+# quadratic approximation
+curve( dnorm( x , 0.67 , 0.16 ) , lty=2 , add=TRUE )
+```
+
+
+```{r}
+# ANALYTICAL CALCULATION WITH DOUBLE OF DATA BUT SAME PROPORTION
+globe.qa <- quap(
+alist(
+W ~ dbinom( W+L ,p) , # binomial likelihood
+p ~ dunif(0,1) # uniform prior
+) ,
+data=list(W=18,L=12) )
+# display summary of quadratic approximation
+precis( globe.qa )
+# Analytical calculation
+W <- 18
+L <- 12
+curve( dbeta( x , W+1 , L+1 ) , from=0 , to=1 )
+# quadratic approximation
+curve( dnorm( x , 0.6 , 0.09 ) , lty=2 , add=TRUE )
+```
+
+# 2.4.5. MCMC
+
+```{r}
+n_samples <- 1000
+p <- rep( NA , n_samples )
+p[1] <- 0.5
+W <- 6
+L <- 3
+for ( i in 2:n_samples ) {
+p_new <- rnorm( 1 , p[i-1] , 0.1 )
+if ( p_new < 0 ) p_new <- abs( p_new )
+if ( p_new > 1 ) p_new <- 2 - p_new
+q0 <- dbinom( W , W+L , p[i-1] )
+q1 <- dbinom( W , W+L , p_new )
+p[i] <- ifelse( runif(1) < q1/q0 , p_new , p[i-1] )
+}
+
+```
+
+
+```{r}
+dens( p , xlim=c(0,1) )
+curve( dbeta( x , W+1 , L+1 ) , lty=2 , add=TRUE )
+```
+
+
+

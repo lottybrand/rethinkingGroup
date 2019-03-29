@@ -1,0 +1,260 @@
+---
+title: "Chapter 2 (Exercises)"
+author: "Angel V. Jimenez"
+date: "22 March 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# EXERCISES (CHAPTER 2)
+
+# MEDIUM
+
+# 2M1. 
+
+Recall the globe tossing model from the chapter. Compute and plot the grid approximate
+posterior distribution for each of the following sets of observations. In each case, assume a uniform
+prior for p.
+(1) W, W, W
+(2) W, W, W, L
+(3) L, W, W, L, W, W, W
+
+```{r}
+# (1) W, W, W
+
+# define grid (100 points)
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- rep( 1 , 100 ) # uniform prior
+# compute likelihood at each value in grid
+likelihood <- dbinom( 3 , size=3 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "W W W" )
+```
+
+```{r}
+# (2) W, W, W, L
+
+# define grid (100 points)
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- rep( 1 , 100 ) # uniform prior
+# compute likelihood at each value in grid
+likelihood <- dbinom( 3 , size=4 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "W W W L" )
+```
+
+```{r}
+# (3) L, W, W, L, W, W, W
+
+# define grid (100 points)
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- rep( 1 , 100 ) # uniform prior
+# compute likelihood at each value in grid
+likelihood <- dbinom( 5 , size=7 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "L, W, W, L, W, W, W" )
+```
+
+# 2M2. 
+
+Now assume a prior for p that is equal to zero when p < 0.5 and is a positive constant when
+p >= 0.5. Again compute and plot the grid approximate posterior distribution for each of the sets of
+observations in the problem just above.
+
+
+```{r}
+# (1) W, W, W
+
+# define grid (100 points)
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- ifelse( p_grid < 0.5 , 0 , 1 )
+# compute likelihood at each value in grid
+likelihood <- dbinom( 3 , size=3 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "W W W" )
+```
+
+```{r}
+# (2) W, W, W, L
+
+# define grid (100 points)
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- ifelse( p_grid < 0.5 , 0 , 1 )
+# compute likelihood at each value in grid
+likelihood <- dbinom( 3 , size=4 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "W W W L" )
+```
+
+
+```{r}
+# (3) L, W, W, L, W, W, W
+
+# define grid (100 points)
+p_grid <- seq( from=0 , to=1 , length.out=100 )
+# define prior
+prior <- ifelse( p_grid < 0.5 , 0 , 1 )
+# compute likelihood at each value in grid
+likelihood <- dbinom( 5 , size=7 , prob=p_grid )
+# compute product of likelihood and prior
+unstd.posterior <- likelihood * prior
+# standardize the posterior, so it sums to 1
+posterior <- unstd.posterior / sum(unstd.posterior)
+plot( p_grid , posterior , type="b" ,
+xlab="probability of water" , ylab="posterior probability" )
+mtext( "L, W, W, L, W, W, W" )
+```
+
+#2M3. 
+Suppose there are two globes, one for Earth and one for Mars. The Earth globe is 70% covered
+in water. The Mars globe is 100% land. Further suppose that one of these globes—you don’t know
+which—was tossed in the air and produced a “land” observation. Assume that each globe was equally
+likely to be tossed. Show that the posterior probability that the globe was the Earth, conditional on
+seeing “land” (Pr(Earthjland)), is 0.23.
+
+
+P(Land|Earth) = 1-0.70=0.30
+P(Land|Mars) = 1
+P(Earth) = 0.5
+P(Mars)=0.5
+P(Land)= (0.30+1)/2=0.65 --> 0.3x0.5+1x0.5
+
+P(Earth|Land)= (P(Land|Earth)*P(Earth))/P(Land)
+
+```{r}
+(0.30*0.5)/0.65
+```
+
+#2M4. 
+Suppose you have a deck with only three cards. Each card has two sides, and each side is either
+black or white. One card has two black sides. The second card has one black and one white side. The
+third card has two white sides. Now suppose all three cards are placed in a bag and shuffled. Someone
+reaches into the bag and pulls out a card and places it flat on a table. A black side is shown facing up,
+but you don’t know the color of the side facing down. Show that the probability that the other side is
+also black is 2/3. Use the counting method (Section 2 of the chapter) to approach this problem. This
+means counting up the ways that each card could produce the observed data (a black side facing up
+on the table).
+
+3 cards
+each card has 2 sides
+each side is black or white
+
+1st card = 2 blacks
+2nd card = 1 black and 1 white
+3rd card = 2 whites
+
+Shuffle again --> 1 side = black
+
+Probability of the other side being also white? (2/3)
+
+Answer: 
+
+2 blacks: 2 ways
+1 black and 1 white: 1 way
+2 whites: 0 ways
+
+Therefore, 2 ways / 3 possible ways = 2/3
+
+
+2M5. Now suppose there are four cards: B/B, B/W, W/W, and another B/B. Again suppose a card is
+drawn from the bag and a black side appears face up. Again calculate the probability that the other
+side is black.
+
+4 cards: 
+BB
+BW
+WW
+BB
+
+1B --> Probability other side is also B
+
+BB= 2 WAYS
+BW = 1 WAY
+WW = 0 WAYS
+BB= 2 WAYS
+
+4/5
+
+
+#2M6. 
+Imagine that black ink is heavy, and so cards with black sides are heavier than cards with white
+sides. As a result, it’s less likely that a card with black sides is pulled from the bag. So again assume
+there are three cards: B/B, B/W, and W/W. After experimenting a number of times, you conclude that
+for every way to pull the B/B card from the bag, there are 2 ways to pull the B/W card and 3 ways to
+pull the W/W card. Again suppose that a card is pulled and a black side appears face up. Show that
+the probability the other side is black is now 0.5. Use the counting method, as before.
+
+              Priors      Posterior
+BB = 2 ways x 1 way         2 
+BW = 1 way x 2 ways         2
+WW = 0 ways x 3 ways        0
+
+
+1B --> Probability of other side is also B
+
+2/4=0.5
+
+#2M7. 
+
+Assume again the original card problem, with a single card showing a black side face up. Before
+looking at the other side, we draw another card from the bag and lay it face up on the table. The face
+that is shown on the new card is white. Show that the probability that the first card, the one showing
+a black side, has black on its other side is now 0.75. Use the counting method, if you can. Hint: Treat
+this like the sequence of globe tosses, counting all the ways to see each observation, for each possible
+first card.
+
+3 cards
+each card has 2 sides
+each side is black or white
+
+1st card = 2 blacks
+2nd card = 1 black and 1 white
+3rd card = 2 whites
+
+Shuffle again --> 1 side = black
+Another card --> 1 side white
+
+probability first card is 0.75?
+
+1st card
+BB=2 ways
+BW=1 way
+WW= 0 ways
+
+2nd card
+BB= 0 ways
+BW=1 way
+WW=2 ways
