@@ -52,3 +52,4 @@ table(dummy_w)/1e5
 
 dummy_w <- rbinom( 1e5 , size=9 , prob=0.7 )
 simplehist( dummy_w , xlab="dummy water count" )
+

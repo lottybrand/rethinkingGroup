@@ -1,3 +1,4 @@
+library(rethinking)
 
 p_grid <- seq( from=0 , to=1 , length.out=1000 )
 prior <- rep( 1 , 1000 )
@@ -42,3 +43,18 @@ HPDI( samples , prob=0.66 )
 PI( samples , prob=0.66 )
 #17%       83% 
 #0.5005005 0.7687688 
+
+p_grid <- seq( from=0 , to=1 , length.out=1000 )
+prior <- rep( 1 , 1000 )
+likelihood <- dbinom( 8 , size=15 , prob=p_grid )
+posterior <- likelihood * prior
+posterior <- posterior / sum(posterior)
+set.seed(100)
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+
+HPDI(samples, 0.9)
+
+samples <- sample( p_grid , prob=posterior , size=1e4 , replace=TRUE )
+w <- rbinom( 1e4 , size=15 , prob=samples )
+
+sum( w==8 ) / 1e4
